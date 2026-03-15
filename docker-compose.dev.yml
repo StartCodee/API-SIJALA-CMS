@@ -1,0 +1,85 @@
+name: sijala-cms-dev
+
+services:
+  api-cms:
+    image: node:20-alpine
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      PORT: ${PORT:-4100}
+      SERVER_PORT: ${SERVER_PORT:-4100}
+      SERVER_HOST: ${DOCKER_SERVER_HOST:-0.0.0.0}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4100}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
+      DB_HOST: ${DOCKER_DB_HOST:-db-cms}
+      DB_PORT: ${DOCKER_DB_PORT:-5432}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-superstrongpassword}
+      DB_NAME: ${DB_NAME:-sijala_cms_db}
+      AUTH_ISSUER: ${AUTH_ISSUER:-http://localhost:9000}
+      SSO_INTERNAL_BASE_URL: ${DOCKER_SSO_INTERNAL_BASE_URL:-http://host.docker.internal:9000}
+      SSO_INTERNAL_BASE_URLS: ${DOCKER_SSO_INTERNAL_BASE_URLS:-http://host.docker.internal:9000,http://localhost:9000}
+      SSO_SERVICE_AUTH_SECRET: ${SSO_SERVICE_AUTH_SECRET:-dev-sso-service-auth-secret}
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID:-cms-dashboard}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET:-cms-dashboard-secret}
+      SSO_ALLOWED_CLIENT_IDS: ${SSO_ALLOWED_CLIENT_IDS:-cms-dashboard}
+      SSO_HTTP_TIMEOUT_MS: ${SSO_HTTP_TIMEOUT_MS:-6000}
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:-dev-cms-auth-session-secret-minimum-32-char}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-dev-cms-auth-jwt-secret-minimum-32-characters}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-sijala-cms-api}
+      ACCESS_TOKEN_TTL_SECONDS: ${ACCESS_TOKEN_TTL_SECONDS:-900}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      AUTH_REFRESH_COOKIE_NAME: ${AUTH_REFRESH_COOKIE_NAME:-cms_refresh_token}
+      AUTH_REFRESH_COOKIE_PATH: ${AUTH_REFRESH_COOKIE_PATH:-/api/auth}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/app
+      - cms_node_modules:/app/node_modules
+    ports:
+      - "4100:4100"
+    depends_on:
+      db-cms:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npm install &&
+        npm run migrate &&
+        npm run dev
+      "
+    restart: unless-stopped
+    networks:
+      - cms-network
+
+  db-cms:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-superstrongpassword}
+      POSTGRES_DB: ${DB_NAME:-sijala_cms_db}
+    volumes:
+      - cms_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-sijala_cms_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - cms-network
+
+volumes:
+  cms_node_modules:
+  cms_postgres_data:
+
+networks:
+  cms-network:
+    driver: bridge

@@ -15,4 +15,8 @@ const pool = new Pool({
   port: dbPort
 });
 
-module.exports = pool;
+module.exports = {
+  query: (...args) => pool.query(...args),
+  connect: () => pool.connect(),
+  pool,
+};

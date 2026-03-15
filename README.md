@@ -7,14 +7,35 @@ Backend API untuk integrasi FE `sijala_cms` dan BE `SIJALA-CMS-BE`.
 - Node.js + JS
 - Express
 - PostgreSQL (`pg`)
+- SSO via OIDC
 
 ## Migration
 
 Migration ada di folder migration/mig.sql
 
+## Auth
+
+Backend ini sekarang mengikuti pola auth yang sama seperti dashboard patroli web:
+
+- Login browser diarahkan ke SSO melalui `GET /api/auth/sso/start`
+- FE menyelesaikan code exchange di `POST /api/auth/sso/exchange`
+- Access token dikirim ke frontend dan hanya disimpan di memori
+- Refresh token dijaga lewat cookie `HttpOnly` di backend
+- Endpoint konten CMS (`/api/berita`, `/api/publikasi`, `/api/kegiatan`) sekarang memerlukan bearer token
+
+Endpoint auth utama:
+
+- `GET /api/auth/sso/login-url`
+- `GET /api/auth/sso/start`
+- `GET /api/auth/sso/logout-url`
+- `POST /api/auth/sso/exchange`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+
 ## API BERITA
-- [GET] localhost:5000/api/berita
-- [POST] localhost:5000/api/berita
+- [GET] localhost:4100/api/berita
+- [POST] localhost:4100/api/berita
 request :
 {
     "title": "berita Leo",
@@ -27,12 +48,12 @@ request :
     "content": "TEST123"
 
 }
-- [PATCH] localhost:5000/api/berita/:id
-- [DELETE] localhost:5000/api/berita/:id
+- [PATCH] localhost:4100/api/berita/:id
+- [DELETE] localhost:4100/api/berita/:id
 
 ## API PUBLIKASI
-- [GET] localhost:5000/api/publikasi
-- [POST] localhost:5000/api/publikasi
+- [GET] localhost:4100/api/publikasi
+- [POST] localhost:4100/api/publikasi
 request :
 {
     "title": "publikasi Leo2",
@@ -46,12 +67,12 @@ request :
     "pdf":"leo.pdf"
 
 }
-- [PATCH] localhost:5000/api/publikasi/:id
-- [DELETE] localhost:5000/api/publikasi/:id
+- [PATCH] localhost:4100/api/publikasi/:id
+- [DELETE] localhost:4100/api/publikasi/:id
 
 ## API KALENDER KEGIATAN
-- [GET] localhost:5000/api/kegiatan
-- [POST] localhost:5000/api/kegiatan
+- [GET] localhost:4100/api/kegiatan
+- [POST] localhost:4100/api/kegiatan
 request :
 {
     "title": "Kegiatan Leo2",
@@ -63,6 +84,5 @@ request :
     "summary": "TEST",
     "description": "ABC123567980"
 }
-- [PATCH] localhost:5000/api/kegiatan/:id
-- [DELETE] localhost:5000/api/kegiatan/:id
-
+- [PATCH] localhost:4100/api/kegiatan/:id
+- [DELETE] localhost:4100/api/kegiatan/:id

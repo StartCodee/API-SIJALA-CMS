@@ -1,5 +1,21 @@
 const db = require("../db");
 
+function resolveImagePath(req) {
+  if (req.files?.image?.[0]?.filename) {
+    return `/uploads/kegiatan/${req.files.image[0].filename}`;
+  }
+
+  if (req.files?.thumbnail?.[0]?.filename) {
+    return `/uploads/kegiatan/${req.files.thumbnail[0].filename}`;
+  }
+
+  if (req.file?.filename) {
+    return `/uploads/kegiatan/${req.file.filename}`;
+  }
+
+  return null;
+}
+
 exports.getAllKegiatan = async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM kalender_kegiatan ORDER BY date ASC");
@@ -12,9 +28,7 @@ exports.getAllKegiatan = async (req, res) => {
 exports.createKegiatan = async (req, res) => {
   const { title, location, date, time, category, summary, description } = req.body;
 
-    const image = req.files?.image
-    ? `/uploads/kegiatan/${req.files.image[0].filename}`
-    : null;
+    const image = resolveImagePath(req);
 
   try {
     const result = await db.query(
@@ -52,8 +66,9 @@ const fields = Object.keys(req.body)
     return obj;
   }, {});
 
-   if (req.files?.image) {
-    fields.image = `/uploads/kegiatan/${req.files.image[0].filename}`;
+  const image = resolveImagePath(req);
+  if (image) {
+    fields.image = image;
   }
 
   try {

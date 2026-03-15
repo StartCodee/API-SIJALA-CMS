@@ -1,5 +1,17 @@
 const db = require("../db");
 
+function resolveThumbnailPath(req) {
+  if (req.files?.thumbnail?.[0]?.filename) {
+    return `/uploads/berita/${req.files.thumbnail[0].filename}`;
+  }
+
+  if (req.file?.filename) {
+    return `/uploads/berita/${req.file.filename}`;
+  }
+
+  return null;
+}
+
 exports.getAllBerita = async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM berita ORDER BY created_at DESC");
@@ -25,9 +37,7 @@ exports.createBerita = async (req, res) => {
   //   ? `/uploads/berita/${req.file.filename}`
   //   : null;
 
-  const thumbnail = req.files?.thumbnail
-    ? `/uploads/berita/${req.files.thumbnail[0].filename}`
-    : null;
+  const thumbnail = resolveThumbnailPath(req);
 
   try {
 
@@ -78,8 +88,9 @@ exports.updateBerita = async (req, res) => {
     return obj;
   }, {});
 
-  if (req.files?.thumbnail) {
-    fields.thumbnail = `/uploads/berita/${req.files.thumbnail[0].filename}`;
+  const thumbnail = resolveThumbnailPath(req);
+  if (thumbnail) {
+    fields.thumbnail = thumbnail;
   }
 
   try {
