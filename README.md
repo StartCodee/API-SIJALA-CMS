@@ -13,6 +13,25 @@ Backend API untuk integrasi FE `sijala_cms` dan BE `SIJALA-CMS-BE`.
 
 Migration ada di folder migration/mig.sql
 
+## SPOT Coverage Monitoring
+
+Backend ini sekarang juga menyediakan flow untuk monitoring coverage kapal berbasis feed SPOT / FindMeSPOT:
+
+- CRUD tracker/feed config via endpoint `tracker-configs`
+- Feed bisa bertipe `public` atau `private` dengan password feed
+- Polling feed SPOT JSON/XML secara berkala dari tracker aktif yang tersimpan di database
+- Penyimpanan titik track kapal ke PostgreSQL dengan dedupe key
+- Penyimpanan polygon area monitoring per tracker
+- Perhitungan coverage `intersection(buffer(route, 1km), polygon)`
+- Endpoint simulasi route untuk menghitung coverage dari polygon + route gambar user
+
+Env baru yang relevan:
+
+- `SPOT_FEED_FORMAT=auto|json|xml`
+- `SPOT_FEED_POLL_INTERVAL_MS` (default `180000`)
+- `SPOT_FEED_TIMEOUT_MS` (default `15000`)
+- `TRACKER_ONLINE_WINDOW_MINUTES` (default `10`)
+
 ## Auth
 
 Backend ini sekarang mengikuti pola auth yang sama seperti dashboard patroli web:
@@ -86,3 +105,19 @@ request :
 }
 - [PATCH] localhost:4100/api/kegiatan/:id
 - [DELETE] localhost:4100/api/kegiatan/:id
+
+## API SISPANDALWAS COVERAGE
+
+Semua endpoint berikut memerlukan bearer token:
+
+- [GET] `localhost:4100/api/sispandalwas/trackers`
+- [GET] `localhost:4100/api/sispandalwas/tracker-configs`
+- [POST] `localhost:4100/api/sispandalwas/tracker-configs`
+- [PATCH] `localhost:4100/api/sispandalwas/tracker-configs/:id`
+- [DELETE] `localhost:4100/api/sispandalwas/tracker-configs/:id`
+- [POST] `localhost:4100/api/sispandalwas/poll-feed`
+- [GET] `localhost:4100/api/sispandalwas/coverage-area?trackerId=<trackerId>`
+- [PUT] `localhost:4100/api/sispandalwas/coverage-area`
+- [GET] `localhost:4100/api/sispandalwas/track?trackerId=<trackerId>`
+- [GET] `localhost:4100/api/sispandalwas/coverage?trackerId=<trackerId>`
+- [POST] `localhost:4100/api/sispandalwas/simulate`

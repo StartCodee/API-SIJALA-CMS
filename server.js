@@ -7,7 +7,9 @@ const beritaRoutes = require("./routes/beritaRoutes");
 const publikasiRoutes = require("./routes/publikasiRoutes");
 const kegiatanRoutes = require("./routes/kegiatanRoutes");
 const authRoutes = require("./routes/authRoutes");
+const sispandalwasRoutes = require("./routes/sispandalwasRoutes");
 const { requireAuth } = require("./middleware/auth");
+const spotFeedService = require("./services/spotFeedService");
 
 const app = express();
 
@@ -53,6 +55,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/berita", requireAuth, beritaRoutes);
 app.use("/api/publikasi", requireAuth, publikasiRoutes);
 app.use("/api/kegiatan", requireAuth, kegiatanRoutes);
+app.use("/api/sispandalwas", requireAuth, sispandalwasRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.use((err, _req, res, _next) => {
@@ -71,4 +74,5 @@ app.use((err, _req, res, _next) => {
 
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
+  spotFeedService.start();
 });

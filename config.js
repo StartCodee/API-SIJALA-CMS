@@ -18,6 +18,11 @@ function toNumber(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function toPositiveNumber(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 const serverHost = String(process.env.SERVER_HOST || "localhost").trim();
 const serverPort = toNumber(process.env.SERVER_PORT || process.env.PORT, 4100);
 
@@ -94,5 +99,18 @@ module.exports = {
     process.env.NODE_ENV === "production",
   cookieSameSite: String(process.env.COOKIE_SAME_SITE || "lax").trim() || "lax",
   cookiePath: String(process.env.AUTH_REFRESH_COOKIE_PATH || "/api/auth").trim(),
+  spotFeedFormat: String(process.env.SPOT_FEED_FORMAT || "auto").trim().toLowerCase(),
+  spotFeedPollIntervalMs: Math.max(
+    60 * 1000,
+    toPositiveNumber(process.env.SPOT_FEED_POLL_INTERVAL_MS, 3 * 60 * 1000)
+  ),
+  spotFeedTimeoutMs: Math.max(
+    3 * 1000,
+    toPositiveNumber(process.env.SPOT_FEED_TIMEOUT_MS, 15 * 1000)
+  ),
+  trackerOnlineWindowMinutes: Math.max(
+    1,
+    toPositiveNumber(process.env.TRACKER_ONLINE_WINDOW_MINUTES, 10)
+  ),
   nodeEnv: String(process.env.NODE_ENV || "development").trim(),
 };
