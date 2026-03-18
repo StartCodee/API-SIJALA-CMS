@@ -116,3 +116,15 @@ exports.deleteKegiatan = async (req, res) => {
     res.status(500).json(err.message);
   }
 };
+
+
+exports.getAllKegiatanByDate = async (req, res) => {
+  const { date } = req.params;
+
+  try {
+    const result = await db.query("SELECT * FROM kalender_kegiatan WHERE date = $1 ORDER BY time ASC", [date]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+};

@@ -21,5 +21,7 @@ router.patch(
   kegiatan.updateKegiatan
 );
 router.delete("/:id", kegiatan.deleteKegiatan);
+router.get("/:date", kegiatan.getAllKegiatanByDate);
+
 
 module.exports = router;
